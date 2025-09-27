@@ -1,0 +1,46 @@
+{
+  "users": [
+    {
+      "id": "iYNuw-cmdMXZbTHJV_gfp",
+      "name": "Sanjay",
+      "email": "sanjay@gmail.com",
+      "password": "$2b$08$CeQYdBg1sBAyNYIwFh3ajeGyK.gUh5WgDgRcVDzB6S/UsM7kxWbBa",
+      "roles": [
+        "Admin"
+      ]
+    },
+    {
+      "id": "0M7F6CjNq2xfAw94gup3N",
+      "name": "Rickey manager ",
+      "email": "rickey@gmail.com",
+      "password": "$2b$08$CeQYdBg1sBAyNYIwFh3ajeGyK.gUh5WgDgRcVDzB6S/UsM7kxWbBa",
+      "roles": [
+        "Manager"
+      ]
+    },
+    {
+      "id": "nsGDJ3IVQL368k0yl2F5J",
+      "name": "vetri editor",
+      "email": "vetri@gmail.com",
+      "password": "$2b$08$CeQYdBg1sBAyNYIwFh3ajeGyK.gUh5WgDgRcVDzB6S/UsM7kxWbBa",
+      "roles": [
+        "Editor"
+      ]
+    },
+    {
+      "id": "Xcr8qdBxChZ_udMo_7CAE",
+      "name": "manju viewer",
+      "email": "manju@gmail.com",
+      "password": "$2b$08$CeQYdBg1sBAyNYIwFh3ajeGyK.gUh5WgDgRcVDzB6S/UsM7kxWbBa",
+      "roles": [
+        "Viewer"
+      ]
+    }
+  ],
+  "roles": [
+    "Viewer",
+    "Editor",
+    "Manager",
+    "Admin"
+  ]
+}

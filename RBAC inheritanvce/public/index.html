@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RBAC Dark Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & fonts */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #0f172a; color: #e2e8f0; }
+
+    /* Container */
+    .container { max-width: 900px; margin: 50px auto; padding: 25px; background: #1e293b; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+
+    /* Header */
+    header { text-align: center; margin-bottom: 30px; }
+    header h1 { font-size: 2rem; font-weight: 700; color: #f1f5f9; }
+
+    /* Login Form */
+    .login-form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+    .login-form input { padding: 14px 15px; border-radius: 10px; border: none; background: #334155; color: #f1f5f9; font-size: 1rem; }
+    .login-form input::placeholder { color: #94a3b8; }
+    .login-form button { padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: #fff; font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .login-form button:hover { background: linear-gradient(135deg,#4f46e5,#4338ca); }
+    .error { color: #f87171; font-size: 0.9rem; text-align: center; }
+
+    /* Dashboard */
+    .dashboard { display: none; flex-direction: column; gap: 25px; }
+    .dashboard .welcome { font-size: 1.2rem; font-weight: 600; color: #f1f5f9; }
+    .cards { display: flex; flex-wrap: wrap; gap: 20px; }
+    .card { flex: 1 1 200px; background: #334155; padding: 22px; border-radius: 16px; text-align: center; transition: transform 0.3s, background 0.3s; cursor: pointer; }
+    .card h3 { margin-bottom: 12px; color: #818cf8; font-weight: 700; }
+    .card p { font-size: 0.95rem; color: #cbd5e1; }
+    .card:hover { transform: translateY(-6px); background: #475569; }
+
+    /* Responsive */
+    @media(max-width: 600px) {
+      .cards { flex-direction: column; }
+    }
+
+    /* Logout Button */
+    .logout-btn { align-self: flex-end; padding: 10px 18px; border: none; border-radius: 10px; background: #ef4444; color: #fff; font-weight: 700; cursor: pointer; transition: background 0.3s; }
+    .logout-btn:hover { background: #b91c1c; }
+
+    /* Smooth transition for dashboard content */
+    .dashboard, .login-form { transition: all 0.3s ease; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>RBAC with inheritance</h1>
+    </header>
+
+    <!-- Login Form -->
+    <form class="login-form" id="loginForm">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <div class="error" id="loginError"></div>
+    </form>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+      <div class="welcome" id="welcomeMsg"></div>
+      <div class="cards" id="cardsContainer">
+        <!-- Role-based cards will appear here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const dashboard = document.getElementById('dashboard');
+    const welcomeMsg = document.getElementById('welcomeMsg');
+    const cardsContainer = document.getElementById('cardsContainer');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const roleHierarchy = {
+      Viewer: [],
+      Editor: ['Viewer'],
+      Manager: ['Editor','Viewer'],
+      Admin: ['Manager','Editor','Viewer']
+    };
+
+    function expandRoles(roles) {
+      const set = new Set();
+      function add(role) {
+        if (!role || set.has(role)) return;
+        set.add(role);
+        (roleHierarchy[role] || []).forEach(add);
+      }
+      roles.forEach(add);
+      return Array.from(set);
+    }
+
+    function renderDashboard(user) {
+      welcomeMsg.textContent = `Welcome, ${user.name}! Your roles: ${user.roles.join(', ')}`;
+      cardsContainer.innerHTML = '';
+
+      const roles = expandRoles(user.roles);
+
+      if (roles.includes('Viewer')) {
+        cardsContainer.innerHTML += `
+          <div class="card">
+            <h3>Viewer Content</h3>
+            <p>Accessible by Viewer or higher.</p>
+          </div>`;
+      }
+
+      if (roles.includes('Editor')) {
+        cardsContainer.innerHTML += `
+          <div class="card">
+            <h3>Editor Panel</h3>
+            <p>Accessible by Editor or higher.</p>
+          </div>`;
+      }
+
+      if (roles.includes('Manager')) {
+        cardsContainer.innerHTML += `
+          <div class="card">
+            <h3>Manager Dashboard</h3>
+            <p>Accessible by Manager or higher.</p>
+          </div>`;
+      }
+
+      if (roles.includes('Admin')) {
+        cardsContainer.innerHTML += `
+          <div class="card">
+            <h3>Admin Panel</h3>
+            <p>Accessible by Admin only.</p>
+          </div>`;
+      }
+    }
+
+    function showDashboard() {
+      loginForm.style.display = 'none';
+      dashboard.style.display = 'flex';
+    }
+
+    function showLogin() {
+      loginForm.style.display = 'flex';
+      dashboard.style.display = 'none';
+    }
+
+    // Login handler
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.textContent = '';
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('http://localhost:4000/api/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          loginError.textContent = data.message || 'Login failed';
+          return;
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        renderDashboard(data.user);
+        showDashboard();
+      } catch (err) {
+        loginError.textContent = 'Network error';
+      }
+    });
+
+    // Logout handler
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      showLogin();
+    });
+
+    // Auto-login if token exists
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (storedUser) {
+      renderDashboard(storedUser);
+      showDashboard();
+    }
+  </script>
+
+</body>
+</html>
